@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.notesapp.models.Note
 import com.example.notesapp.adapters.NotesAdapter
 import com.example.notesapp.R
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.*
 
 class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
@@ -32,7 +33,6 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         userNotes.clear()
-
         userNotes.add(Note("First Title", getString(R.string.note_desc), Date()))
         userNotes.add(Note("Second Title", getString(R.string.note_desc), Date()))
         userNotes.add(Note("Third Title", getString(R.string.note_desc), Date()))
@@ -45,7 +45,6 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
 
         val adapter = NotesAdapter(userNotes, this)
         recyclerView.adapter = adapter
-
     }
 
     override fun onItemClick(position: Int) {
