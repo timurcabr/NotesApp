@@ -10,25 +10,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
-import androidx.fragment.app.DialogFragment
 import com.example.notesapp.R
 import com.example.notesapp.Utils
 import com.example.notesapp.models.Note
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
-class AddNoteFragment : DialogFragment() {
+class EditFragment : Fragment() {
 
+    private lateinit var noteTitle: TextInputEditText
+    private lateinit var noteDesc: TextInputEditText
+    private lateinit var noteDateView: TextView
     private lateinit var selectDate: Button
-    private lateinit var addNote: Button
     private lateinit var selectedDateView: TextView
-    private lateinit var noteTitle: TextInputLayout
-    private lateinit var noteDesc: TextInputLayout
+    private lateinit var saveNote: Button
     private lateinit var noteDate: Date
     private val gson = Gson()
 
@@ -36,21 +35,18 @@ class AddNoteFragment : DialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_add_note, container, false)
+        return inflater.inflate(R.layout.fragment_edit, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        selectDate = view.findViewById(R.id.selectDate)
-        addNote = view.findViewById(R.id.addNote)
-        selectedDateView = view.findViewById(R.id.selectedDate)
-        noteTitle = view.findViewById(R.id.noteTitle_add)
-        noteDesc = view.findViewById(R.id.noteDesc_add)
-
-        addNote.setOnClickListener{
-            addNote()
-        }
+        noteTitle = view.findViewById(R.id.noteTitle_editText)
+        noteDesc = view.findViewById(R.id.noteDesc_editText)
+        noteDateView = view.findViewById(R.id.selectedDate_edit)
+        selectDate = view.findViewById(R.id.selectDate_edit)
+        selectedDateView = view.findViewById(R.id.selectedDate_edit)
+        saveNote = view.findViewById(R.id.saveNote)
 
         selectDate.setOnClickListener {
             val myCalendar = Calendar.getInstance()
@@ -73,19 +69,19 @@ class AddNoteFragment : DialogFragment() {
                 ).show()
             }
         }
-    }
 
-    override fun onStart() {
-        super.onStart()
-        val width = (resources.displayMetrics.widthPixels * 0.90).toInt()
-        val height = (resources.displayMetrics.heightPixels * 0.50).toInt()
-        dialog!!.window?.setLayout(width, height)
-    }
+        val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
+        val bundle = this.arguments
+        val noteArg = bundle?.getSerializable(Utils.KEY) as Note
+        noteTitle.setText(noteArg.title)
+        noteDesc.setText(noteArg.description)
+        noteDateView.text = sdf.format(noteArg.publicDate).toString()
 
-    private fun addNote() {
-        val noteTitleView = noteTitle.editText?.text.toString()
-        val noteDescView = noteDesc.editText?.text.toString()
-        if (noteTitleView.isNotEmpty() && noteDescView.isNotEmpty()) {
+        saveNote.setOnClickListener {
+            val noteTitleView = noteTitle.text.toString()
+            val noteDescView = noteDesc.text.toString()
+            val noteDate = Date()
+            Log.i("MyData", "$noteTitleView  $noteDescView")
             val note = Note(noteTitleView, noteDescView, noteDate)
             val sharedPreferences =
                 context?.getSharedPreferences(Utils.SHARED_DB_NAME, Context.MODE_PRIVATE)
@@ -93,10 +89,18 @@ class AddNoteFragment : DialogFragment() {
                 val listType = object : TypeToken<MutableList<Note>>() {}.type
                 val json = sharedPreferences.getString(Utils.DATA_LIST, null)
                 val userNotes: MutableList<Note> = gson.fromJson(json, listType)
+                userNotes.remove(noteArg)
                 userNotes.add(note)
                 setSharedPreferences(userNotes)
-                dismiss()
+                setFragment(NotesFragment())
             }
+        }
+    }
+
+    private fun setFragment(fragment: Fragment) {
+        parentFragmentManager.beginTransaction().apply {
+            replace(R.id.fragment_container, fragment)
+            commit()
         }
     }
 

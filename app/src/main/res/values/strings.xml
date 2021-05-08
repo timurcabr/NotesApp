@@ -28,4 +28,7 @@
     <string name="select_date">select date</string>
     <string name="note_description">Note Description</string>
     <string name="note_title">Note Title</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="save">save</string>
 </resources>
