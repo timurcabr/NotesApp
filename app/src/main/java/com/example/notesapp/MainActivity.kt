@@ -27,22 +27,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        1. Подумайте о функционале вашего приложения заметок. Какие экраны там могут быть, помимо основного со списком заметок? Как можно использовать
-//        меню и всплывающее меню в вашем приложении? Не обязательно сразу пытаться реализовать весь этот функционал, достаточно создать макеты и структуру,
-//        а реализацию пока заменить на заглушки или всплывающие уведомления (Toast). Используйте подход Single Activity для отображения экранов.
-//        2. Создайте боковое навигационное меню для своего приложения и добавьте туда хотя бы один экран, например «Настройки» или «О приложении».
-//        3. * Создайте полноценный заголовок для NavigationDrawer’а. К примеру, аватарка пользователя, его имя и какая-то дополнительная информация.
+//        1. Создайте список ваших заметок.
+//        2. Создайте карточку для элемента списка.
+//        3. Класс данных, созданный на шестом уроке, используйте для заполнения карточки списка.
+//        4. * Создайте фрагмент для редактирования данных в конкретной карточке. Этот фрагмент пока можно вызвать через основное меню.
 
         drawerLayout = findViewById(R.id.drawerLayout)
         navigationView = findViewById(R.id.navigationMenu)
         toggle = ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close)
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         navigationView.setNavigationItemSelectedListener {
-            when(it.itemId){
+            when (it.itemId) {
                 R.id.main -> setFragment(NotesFragment())
                 R.id.about -> setFragment(AboutFragment())
             }
@@ -51,13 +49,13 @@ class MainActivity : AppCompatActivity() {
         }
         fragmentOrientation()
 
-        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener{
+        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             AddNoteFragment().show(supportFragmentManager, "Add Note Fragment")
         }
     }
 
 
-    private fun setFragment(fragment: Fragment){
+    private fun setFragment(fragment: Fragment) {
         val fragmentManager = supportFragmentManager
         fragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
@@ -65,7 +63,7 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun fragmentOrientation(){
+    private fun fragmentOrientation() {
         val fragmentManager = supportFragmentManager
         val fragment = fragmentManager.findFragmentById(R.id.fragment_container)
         if (fragment == null) {
@@ -74,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                 .commit()
         }
 
-        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             fragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, NotesFragment())
                 .commit()
@@ -87,10 +85,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (toggle.onOptionsItemSelected(item)){
+        if (toggle.onOptionsItemSelected(item)) {
             return true
         }
-        if (item.itemId == R.id.doneNotes){
+        if (item.itemId == R.id.doneNotes) {
             Toast.makeText(this, "Here we will show done notes", Toast.LENGTH_SHORT).show()
         }
         return super.onOptionsItemSelected(item)

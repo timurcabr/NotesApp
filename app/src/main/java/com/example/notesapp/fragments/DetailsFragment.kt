@@ -2,21 +2,21 @@ package com.example.notesapp.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.notesapp.R
+import com.example.notesapp.Utils
 import com.example.notesapp.models.Note
 import java.text.SimpleDateFormat
 
 class DetailsFragment : Fragment() {
 
-    lateinit var noteTitle: TextView
-    lateinit var noteDesc: TextView
-    lateinit var noteDate: TextView
+    private lateinit var noteTitle: TextView
+    private lateinit var noteDesc: TextView
+    private lateinit var noteDate: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,7 +37,7 @@ class DetailsFragment : Fragment() {
         val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
 
         val bundle = this.arguments
-        val note = bundle?.getSerializable(NotesFragment.KEY) as Note
+        val note = bundle?.getSerializable(Utils.KEY) as Note
         noteTitle.text = note.title
         noteDesc.text = note.description
         noteDate.text = sdf.format(note.publicDate).toString()
