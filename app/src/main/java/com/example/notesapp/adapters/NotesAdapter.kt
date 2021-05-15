@@ -30,7 +30,7 @@ class NotesAdapter(
             noteDelete.setOnClickListener(this)
             noteEdit.setOnClickListener(this)
             itemView.setOnCreateContextMenuListener(this)
-            itemView.setOnLongClickListener{
+            itemView.setOnLongClickListener {
                 it.showContextMenu()
             }
         }
@@ -38,8 +38,16 @@ class NotesAdapter(
         override fun onClick(v: View?) {
             when (v?.id) {
                 R.id.parent -> listener.onItemClick(adapterPosition)
-                R.id.note_delete -> Toast.makeText(context, "This function currently is in context menu", Toast.LENGTH_SHORT).show()
-                R.id.note_edit -> Toast.makeText(context, "This function currently is in context menu", Toast.LENGTH_SHORT).show()
+                R.id.note_delete -> Toast.makeText(
+                    context,
+                    "This function currently is in context menu",
+                    Toast.LENGTH_SHORT
+                ).show()
+                R.id.note_edit -> Toast.makeText(
+                    context,
+                    "This function currently is in context menu",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -49,8 +57,10 @@ class NotesAdapter(
             menuInfo: ContextMenu.ContextMenuInfo?
         ) {
             menu?.setHeaderTitle("Manipulate with note")
-            menu?.add(Menu.NONE, R.id.context_edit,1,"Edit")?.setOnMenuItemClickListener(onClickMenu)
-            menu?.add(Menu.NONE, R.id.context_delete,2,"Delete")?.setOnMenuItemClickListener(onClickMenu)
+            menu?.add(Menu.NONE, R.id.context_edit, 1, "Edit")
+                ?.setOnMenuItemClickListener(onClickMenu)
+            menu?.add(Menu.NONE, R.id.context_delete, 2, "Delete")
+                ?.setOnMenuItemClickListener(onClickMenu)
         }
 
         private val onClickMenu: MenuItem.OnMenuItemClickListener =

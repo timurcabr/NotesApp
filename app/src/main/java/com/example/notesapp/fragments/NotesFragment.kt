@@ -1,10 +1,10 @@
 package com.example.notesapp.fragments
 
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -14,15 +14,15 @@ import com.example.notesapp.R
 import com.example.notesapp.Utils
 import com.example.notesapp.adapters.NotesAdapter
 import com.example.notesapp.models.Note
-import com.google.gson.Gson
-import java.util.*
+import com.google.firebase.firestore.FirebaseFirestore
 
 class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
 
-    private var userNotes = mutableListOf<Note>()
     lateinit var recyclerView: RecyclerView
     lateinit var adapter: NotesAdapter
-    private val gson = Gson()
+    lateinit var progressBar: ProgressBar
+    private var userNotes = mutableListOf<Note>()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,20 +33,9 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        progressBar = view.findViewById(R.id.progressBar)
 
-        userNotes.clear()
-        updateList()
-
-        checkListSize(view)
-
-        recyclerView = view.findViewById(R.id.notesList)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.setHasFixedSize(true)
-
-        adapter = context?.let { NotesAdapter(it, userNotes, this) }!!
-        recyclerView.adapter = adapter
-        registerForContextMenu(recyclerView)
-        setSharedPreferences(userNotes)
+        retrieveDataFromFirestore()
     }
 
     override fun onItemClick(position: Int) {
@@ -68,15 +57,18 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
                 .addToBackStack(null)
                 .commit()
         }
-        view?.let { checkListSize(it) }
     }
 
     override fun onDeleteClick(position: Int) {
-        Toast.makeText(context, "Delete click", Toast.LENGTH_SHORT).show()
-        userNotes.remove(userNotes[position])
-        setSharedPreferences(userNotes)
-        adapter.notifyDataSetChanged()
-        view?.let { checkListSize(it) }
+        adapter.notifyItemRemoved(position)
+        val note = userNotes[position]
+        Toast.makeText(context, note.id, Toast.LENGTH_SHORT).show()
+        db.collection("notes")
+            .document(note.id)
+            .delete()
+            .addOnSuccessListener { Log.d("MyData", "Note successfully deleted!") }
+            .addOnFailureListener { e -> Log.w("MyData", "Error deleting document", e) }
+        retrieveDataFromFirestore()
     }
 
     override fun onEditClick(position: Int) {
@@ -92,38 +84,44 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
             .commit()
     }
 
-    fun updateList(){
-        val preferences = context?.getSharedPreferences(Utils.SHARED_DB_NAME, Context.MODE_PRIVATE)
-        if (preferences?.getString(Utils.DATA_LIST, null) != null) {
-            userNotes.addAll(
-                gson.fromJson(
-                    preferences.getString(Utils.DATA_LIST, null),
-                    Array<Note>::class.java
-                )
-            )
-            Log.i("MyData", userNotes.size.toString())
-        }
+    private fun handleRecyclerView(userNotes: MutableList<Note>) {
+        Log.i("MyData handle", userNotes.toString())
+        recyclerView = requireView().findViewById(R.id.notesList)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.setHasFixedSize(true)
+
+        adapter = context?.let { NotesAdapter(it, userNotes, this) }!!
+        recyclerView.adapter = adapter
+        registerForContextMenu(recyclerView)
     }
 
-    private fun setSharedPreferences(userNotes: MutableList<Note>) {
-        val sharedPreference =
-            context?.getSharedPreferences(Utils.SHARED_DB_NAME, Context.MODE_PRIVATE)
-        val editor = sharedPreference?.edit()
-        val userNotesString = gson.toJson(userNotes)
-        editor?.putString(Utils.DATA_LIST, userNotesString)
-        editor?.apply()
-    }
+    private fun retrieveDataFromFirestore() {
+        var title: String
+        var description: String
+        var date: String
+        var id: String
+        val list = mutableListOf<Note>()
+        db.collection("notes")
+            .get()
+            .addOnCompleteListener {
 
-    private fun checkListSize(view: View) {
-        if (userNotes.size == 0) {
-            view.findViewById<TextView>(R.id.message).visibility = View.VISIBLE
-        } else {
-            view.findViewById<TextView>(R.id.message).visibility = View.GONE
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        setSharedPreferences(userNotes)
+                if (it.isSuccessful) {
+                    for (document in it.result!!) {
+                        title = document.data["title"] as String
+                        description = document.data["description"] as String
+                        date = document.data["publicDate"] as String
+                        id = document.data["id"] as String
+                        val temp = Note(title, description, date, id)
+                        list.add(temp)
+                    }
+                    userNotes.clear()
+                    userNotes.addAll(list)
+                    handleRecyclerView(list)
+                    progressBar.visibility = View.GONE
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("MyData", exception.toString())
+            }
     }
 }

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1057295239571",
+    "project_id": "amazing-notes-79093",
+    "storage_bucket": "amazing-notes-79093.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057295239571:android:e32cb55ddfb538d14e4066",
+        "android_client_info": {
+          "package_name": "com.example.notesapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1057295239571-tpdk2uj3pp3quos61vfsnr4pdok5e0pg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.notesapp",
+            "certificate_hash": "a6202e78f9e76abb7eb49e0ddb6087c49badf1d6"
+          }
+        },
+        {
+          "client_id": "1057295239571-i6p8j7q9q82g88ccd8oeeqa0evj0osoo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQl-1eWLf7HmRVy02kLbwVMwBabUtZ2Ho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1057295239571-i6p8j7q9q82g88ccd8oeeqa0evj0osoo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

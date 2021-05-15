@@ -2,9 +2,9 @@ package com.example.notesapp
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -19,12 +19,13 @@ import androidx.fragment.app.Fragment
 import com.example.notesapp.fragments.AboutFragment
 import com.example.notesapp.fragments.NotesFragment
 import com.example.notesapp.models.Note
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -32,16 +33,13 @@ class MainActivity : AppCompatActivity() {
     lateinit var toggle: ActionBarDrawerToggle
     lateinit var drawerLayout: DrawerLayout
     lateinit var navigationView: NavigationView
-    val gson = Gson()
+    private val gson = Gson()
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-//        + 1. Сделайте фрагмент добавления и редактирования данных, если вы ещё не сделали его.
-//        2. Сделайте навигацию между фрагментами, также организуйте обмен данными между фрагментами.
-//        3. Создайте контекстное меню для изменения и удаления заметок.
-//        4. * Изучите, каким образом можно вызывать DatePicker в виде диалогового окна. Создайте текстовое поле, при нажатии на которое вызывалось бы диалоговое окно с DatePicker.
 
         drawerLayout = findViewById(R.id.drawerLayout)
         navigationView = findViewById(R.id.navigationMenu)
@@ -57,6 +55,17 @@ class MainActivity : AppCompatActivity() {
             }
             drawerLayout.closeDrawers()
             true
+        }
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        val view = navigationView.getHeaderView(0)
+        val signInButton = view.findViewById<SignInButton>(R.id.signInWithGoogle)
+        signInButton.setOnClickListener {
+            //TODO Google Sign in
         }
         fragmentOrientation()
 
@@ -104,20 +113,31 @@ class MainActivity : AppCompatActivity() {
                 && noteDesc.editText?.text.toString().isNotEmpty()
                 && selectedDate != ""
             ) {
+                val id = "note${UUID.randomUUID()}"
+
                 val note = Note(
                     noteTitle.editText?.text.toString(),
                     noteDesc.editText?.text.toString(),
-                    convertDate(selectedDate)
+                    "Timestamp.now()",
+                    id
                 )
-                val sharedPreferences =
-                    getSharedPreferences(Utils.SHARED_DB_NAME, Context.MODE_PRIVATE)
-                if (sharedPreferences?.getString(Utils.DATA_LIST, null) != null) {
-                    val listType = object : TypeToken<MutableList<Note>>() {}.type
-                    val json = sharedPreferences.getString(Utils.DATA_LIST, null)
-                    val userNotes: MutableList<Note> = gson.fromJson(json, listType)
-                    userNotes.add(note)
-                    setSharedPreferences(userNotes)
-                }
+
+                val map = mutableMapOf<String, Any>()
+
+                map["title"] = note.title
+                map["description"] = note.description
+                map["publicDate"] = note.publicDate
+                map["id"] = note.id
+
+                db.collection("notes")
+                    .document(id)
+                    .set(map)
+                    .addOnSuccessListener {
+                        Log.i("MyData", "Data was successfully saved")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.i("MyData", "Loading failed: $e")
+                    }
             }
             setFragment(NotesFragment())
         }
@@ -128,18 +148,6 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun convertDate(pickedDate: String): Date {
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH)
-        return sdf.parse(pickedDate) as Date
-    }
-
-    private fun setSharedPreferences(userNotes: MutableList<Note>) {
-        val sharedPreference = getSharedPreferences(Utils.SHARED_DB_NAME, Context.MODE_PRIVATE)
-        val editor = sharedPreference?.edit()
-        val userNotesString = gson.toJson(userNotes)
-        editor?.putString(Utils.DATA_LIST, userNotesString)
-        editor?.apply()
-    }
 
     private fun setFragment(fragment: Fragment) {
         val fragmentManager = supportFragmentManager

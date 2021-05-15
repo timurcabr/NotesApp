@@ -34,12 +34,10 @@ class DetailsFragment : Fragment() {
         noteDesc = view.findViewById(R.id.noteDesc)
         noteDate = view.findViewById(R.id.noteDate)
 
-        val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
-
         val bundle = this.arguments
         val note = bundle?.getSerializable(Utils.KEY) as Note
         noteTitle.text = note.title
         noteDesc.text = note.description
-        noteDate.text = sdf.format(note.publicDate).toString()
+        noteDate.text = note.publicDate
     }
 }
