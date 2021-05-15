@@ -1,5 +1,6 @@
 package com.example.notesapp.fragments
 
+import android.app.AlertDialog
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -60,15 +61,23 @@ class NotesFragment : Fragment(), NotesAdapter.OnItemClickListener {
     }
 
     override fun onDeleteClick(position: Int) {
-        adapter.notifyItemRemoved(position)
         val note = userNotes[position]
         Toast.makeText(context, note.id, Toast.LENGTH_SHORT).show()
-        db.collection("notes")
-            .document(note.id)
-            .delete()
-            .addOnSuccessListener { Log.d("MyData", "Note successfully deleted!") }
-            .addOnFailureListener { e -> Log.w("MyData", "Error deleting document", e) }
-        retrieveDataFromFirestore()
+        val warningDialog = AlertDialog.Builder(context)
+            .setTitle("Do you really want to delete?")
+            .setIcon(R.drawable.ic_baseline_delete_forever_24)
+            .setPositiveButton("Delete"){ _, _ ->
+                db.collection("notes")
+                    .document(note.id)
+                    .delete()
+                    .addOnSuccessListener { Log.d("MyData", "Note successfully deleted!") }
+                    .addOnFailureListener { e -> Log.w("MyData", "Error deleting document", e) }
+                retrieveDataFromFirestore()
+                adapter.notifyItemRemoved(position)
+            }
+            .setNegativeButton("Cancel"){_,_ ->}
+            .create()
+        warningDialog.show()
     }
 
     override fun onEditClick(position: Int) {
